@@ -31,6 +31,16 @@ module ctrl(Op, Funct, Zero,
    wire i_sltu = rtype& Funct[5]&~Funct[4]& Funct[3]&~Funct[2]& Funct[1]& Funct[0]; // sltu
    wire i_addu = rtype& Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]&~Funct[1]& Funct[0]; // addu
    wire i_subu = rtype& Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]& Funct[1]& Funct[0]; // subu
+   
+   // modified begin: 
+   wire i_sll   = rtype&~Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]&~Funct[1]&~Funct[0]; // sll funct:000000
+   wire i_nor   = rtype& Funct[5]&~Funct[4]&~Funct[3]& Funct[2]& Funct[1]&Funct[0]; // nor funct:100111
+   wire i_srl   = rtype&~Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]& Funct[1]&~Funct[0]; // nor funct:000010
+   wire i_sllv  = rtype&~Funct[5]&~Funct[4]&~Funct[3]& Funct[2]&~Funct[1]&~Funct[0]; // sllv funct:000100
+   wire i_slrv  = rtype&~Funct[5]&~Funct[4]&~Funct[3]& Funct[2]& Funct[1]&~Funct[0]; // slrv funct:000110
+   wire i_jr    = rtype&~Funct[5]&~Funct[4]& Funct[3]&~Funct[2]&~Funct[1]&~Funct[0]; // jr funct:001000
+   wire i_jalr  = rtype&~Funct[5]&~Funct[4]& Funct[3]&~Funct[2]&~Funct[1]& Funct[0]; // slrv funct:001001
+   // modified end
 
   // i format
    wire i_addi = ~Op[5]&~Op[4]& Op[3]&~Op[2]&~Op[1]&~Op[0]; // addi
@@ -39,29 +49,41 @@ module ctrl(Op, Funct, Zero,
    wire i_sw   =  Op[5]&~Op[4]& Op[3]&~Op[2]& Op[1]& Op[0]; // sw
    wire i_beq  = ~Op[5]&~Op[4]&~Op[3]& Op[2]&~Op[1]&~Op[0]; // beq
 
+   // modified begin: 
+   wire i_lui   = ~Op[5]&~Op[4]& Op[3]& Op[2]& Op[1]& Op[0]; // lui op: 001111 寄存器加载高位
+   wire i_slti  = ~Op[5]&~Op[4]& Op[3]&~Op[2]& Op[1]&~Op[0]; // slti op: 001010 小于立即数置1
+   wire i_bne   = ~Op[5]&~Op[4]&~Op[3]& Op[2]&~Op[1]& Op[0]; // bne op: 000101 不等时分支
+   wire i_andi  = ~Op[5]&~Op[4]& Op[3]& Op[2]&~Op[1]&~Op[0]; // slti op: 001100 立即数与
+   // modified end
+
   // j format
    wire i_j    = ~Op[5]&~Op[4]&~Op[3]&~Op[2]& Op[1]&~Op[0];  // j
    wire i_jal  = ~Op[5]&~Op[4]&~Op[3]&~Op[2]& Op[1]& Op[0];  // jal
 
   // generate control signals
-  assign RegWrite   = rtype | i_lw | i_addi | i_ori | i_jal; // register write
+  assign RegWrite   = rtype | i_lw | i_addi | i_ori | i_jal | i_lui | i_slti | i_andi; // register write
   
   assign MemWrite   = i_sw;                           // memory write
-  assign ALUSrc     = i_lw | i_sw | i_addi | i_ori;   // ALU B is from instruction immediate
-  assign EXTOp      = i_addi | i_lw | i_sw;           // signed extension
+  assign ALUSrc     = i_lw | i_sw | i_addi | i_ori | i_lui | i_slti | i_andi;   // ALU B is from instruction immediate
+  assign EXTOp      = i_addi | i_lw | i_sw | i_slti;           // signed extension
 
   // GPRSel_RD   2'b00
   // GPRSel_RT   2'b01
   // GPRSel_31   2'b10
-  assign GPRSel[0] = i_lw | i_addi | i_ori;
+  assign GPRSel[0] = i_lw | i_addi | i_ori | i_lui | i_slti | i_andi;
   assign GPRSel[1] = i_jal;
   
+  // 写入数据选择
   // WDSel_FromALU 2'b00
   // WDSel_FromMEM 2'b01
   // WDSel_FromPC  2'b10 
+  // WDSel[1]   WDSel[0]  i_lw  i_jal
+  //    1          0        0      1
+  //    0          1        1      0
   assign WDSel[0] = i_lw;
   assign WDSel[1] = i_jal;
 
+  // PC来源选择
   // NPC_PLUS4   2'b00
   // NPC_BRANCH  2'b01
   // NPC_JUMP    2'b10

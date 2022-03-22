@@ -21,7 +21,7 @@ module ctrl(Op, Funct, Zero,
   output GPRSel;   // general purpose register selection
   output WDSel;    // (register) write data selection
    
-  // r format
+  // r format, 若执行的是该条指令则对应的wire信号为1
    wire rtype  = ~|Op;
    wire i_add  = rtype& Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]&~Funct[1]&~Funct[0]; // add
    wire i_sub  = rtype& Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]& Funct[1]&~Funct[0]; // sub
@@ -32,6 +32,16 @@ module ctrl(Op, Funct, Zero,
    wire i_addu = rtype& Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]&~Funct[1]& Funct[0]; // addu
    wire i_subu = rtype& Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]& Funct[1]& Funct[0]; // subu
 
+   // modified begin: 
+   wire i_sll   = rtype&~Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]&~Funct[1]&~Funct[0]; // sll funct:000000
+   wire i_nor   = rtype& Funct[5]&~Funct[4]&~Funct[3]& Funct[2]& Funct[1]&Funct[0]; // nor funct:100111
+   wire i_srl   = rtype&~Funct[5]&~Funct[4]&~Funct[3]&~Funct[2]& Funct[1]&~Funct[0]; // nor funct:000010
+   wire i_sllv  = rtype&~Funct[5]&~Funct[4]&~Funct[3]& Funct[2]&~Funct[1]&~Funct[0]; // sllv funct:000100
+   wire i_slrv  = rtype&~Funct[5]&~Funct[4]&~Funct[3]& Funct[2]& Funct[1]&~Funct[0]; // slrv funct:000110
+   wire i_jr    = rtype&~Funct[5]&~Funct[4]& Funct[3]&~Funct[2]&~Funct[1]&~Funct[0]; // jr funct:001000
+   wire i_jalr  = rtype&~Funct[5]&~Funct[4]& Funct[3]&~Funct[2]&~Funct[1]& Funct[0]; // slrv funct:001001
+   // modified end
+
   // i format
    wire i_addi = ~Op[5]&~Op[4]& Op[3]&~Op[2]&~Op[1]&~Op[0]; // addi
    wire i_ori  = ~Op[5]&~Op[4]& Op[3]& Op[2]&~Op[1]& Op[0]; // ori
@@ -39,24 +49,36 @@ module ctrl(Op, Funct, Zero,
    wire i_sw   =  Op[5]&~Op[4]& Op[3]&~Op[2]& Op[1]& Op[0]; // sw
    wire i_beq  = ~Op[5]&~Op[4]&~Op[3]& Op[2]&~Op[1]&~Op[0]; // beq
 
+   // modified begin: 
+   wire i_lui   = ~Op[5]&~Op[4]& Op[3]& Op[2]& Op[1]& Op[0]; // lui op: 001111
+   wire i_slti  = ~Op[5]&~Op[4]& Op[3]&~Op[2]& Op[1]&~Op[0]; // slti op: 001010
+   wire i_bne   = ~Op[5]&~Op[4]&~Op[3]& Op[2]&~Op[1]& Op[0]; // bne op: 000101
+   wire i_andi  = ~Op[5]&~Op[4]& Op[3]& Op[2]&~Op[1]&~Op[0]; // slti op: 001100
+   // modified end
+
   // j format
    wire i_j    = ~Op[5]&~Op[4]&~Op[3]&~Op[2]& Op[1]&~Op[0];  // j
 
   // generate control signals
-  assign RegWrite   = rtype | i_lw | i_addi | i_ori; // register write  
+  assign RegWrite   = rtype | i_lw | i_addi | i_ori | i_lui; // register write  
   
   assign MemWrite   = i_sw;                           // memory write
-  assign ALUSrc     = i_lw | i_sw | i_addi | i_ori;   // ALU B is from instruction immediate
+  assign ALUSrc     = i_lw | i_sw | i_addi | i_ori | i_lui;   // ALU B is from instruction immediate
   assign EXTOp      = i_addi | i_lw | i_sw;           // signed extension
 
   // GPRSel_RD   1'b0
   // GPRSel_RT   1'b1
-  assign GPRSel = i_lw | i_addi | i_ori;
+  assign GPRSel = i_lw | i_addi | i_ori | i_lui;
   
   // WDSel_FromALU 2'b00
   // WDSel_FromMEM 2'b01
   // WDSel_FromPC  2'b10 
-  assign WDSel = i_lw;  
+  // WDSel[1]   WDSel[0]  i_lw  i_lui
+  //    0          0        0     0
+  //    0          0        0     1
+  //    0          1        1     0
+  assign WDSel[0] = i_w & ~i_lui;
+  // assign WDSel[1] = i_lui;
 
   // NPC_PLUS4   2'b00
   // NPC_BRANCH  2'b01

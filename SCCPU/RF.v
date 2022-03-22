@@ -1,10 +1,10 @@
-
+// 寄存器堆
   module RF(   input         clk, 
                input         rst,
-               input         RFWr, 
-               input  [4:0]  A1, A2, A3, 
-               input  [31:0] WD, 
-               output [31:0] RD1, RD2,
+               input         RFWr, // 寄存器写信号
+               input  [4:0]  A1, A2, A3, // 寄存器号
+               input  [31:0] WD, // 写入的数据
+               output [31:0] RD1, RD2,// 读出的数据
                input  [4:0]  reg_sel,
                output [31:0] reg_data);
 

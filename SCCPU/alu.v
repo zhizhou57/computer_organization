@@ -1,5 +1,7 @@
 `include "ctrl_encode_def.v"
 
+// ALU模块
+
 module alu(A, B, ALUOp, C, Zero);
            
    input  signed [31:0] A, B;
@@ -23,7 +25,7 @@ module alu(A, B, ALUOp, C, Zero);
       endcase
    end // end always
    
-   assign Zero = (C == 32'b0);
+   assign Zero = (C == 32'b0); //零标志位
 
 endmodule
     

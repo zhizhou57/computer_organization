@@ -1,5 +1,5 @@
 `include "ctrl_encode_def.v"
-
+// 计算PC
 module NPC(PC, NPCOp, IMM, NPC);  // next pc module
     
    input  [31:0] PC;        // pc

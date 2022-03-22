@@ -1,4 +1,4 @@
-
+// 符号扩展电路
 module EXT( Imm16, EXTOp, Imm32 );
     
    input  [15:0] Imm16;

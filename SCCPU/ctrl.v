@@ -50,40 +50,43 @@ module ctrl(Op, Funct, Zero,
    wire i_beq  = ~Op[5]&~Op[4]&~Op[3]& Op[2]&~Op[1]&~Op[0]; // beq
 
    // modified begin: 
-   wire i_lui   = ~Op[5]&~Op[4]& Op[3]& Op[2]& Op[1]& Op[0]; // lui op: 001111
-   wire i_slti  = ~Op[5]&~Op[4]& Op[3]&~Op[2]& Op[1]&~Op[0]; // slti op: 001010
-   wire i_bne   = ~Op[5]&~Op[4]&~Op[3]& Op[2]&~Op[1]& Op[0]; // bne op: 000101
-   wire i_andi  = ~Op[5]&~Op[4]& Op[3]& Op[2]&~Op[1]&~Op[0]; // slti op: 001100
+   wire i_lui   = ~Op[5]&~Op[4]& Op[3]& Op[2]& Op[1]& Op[0]; // lui op: 001111 寄存器加载高位
+   wire i_slti  = ~Op[5]&~Op[4]& Op[3]&~Op[2]& Op[1]&~Op[0]; // slti op: 001010 小于立即数置1
+   wire i_bne   = ~Op[5]&~Op[4]&~Op[3]& Op[2]&~Op[1]& Op[0]; // bne op: 000101 不等时分支
+   wire i_andi  = ~Op[5]&~Op[4]& Op[3]& Op[2]&~Op[1]&~Op[0]; // slti op: 001100 立即数与
    // modified end
 
   // j format
    wire i_j    = ~Op[5]&~Op[4]&~Op[3]&~Op[2]& Op[1]&~Op[0];  // j
 
   // generate control signals
-  assign RegWrite   = rtype | i_lw | i_addi | i_ori | i_lui; // register write  
+  assign RegWrite   = rtype | i_lw | i_addi | i_ori | i_lui | i_slti | i_andi; // register write  
   
   assign MemWrite   = i_sw;                           // memory write
-  assign ALUSrc     = i_lw | i_sw | i_addi | i_ori | i_lui;   // ALU B is from instruction immediate
-  assign EXTOp      = i_addi | i_lw | i_sw;           // signed extension
+  assign ALUSrc     = i_lw | i_sw | i_addi | i_ori | i_lui | i_slti | i_andi;   // ALU B is from instruction immediate
+  assign EXTOp      = i_addi | i_lw | i_sw | i_slti;           // signed extension, 0对于零扩展, 1对应符号扩展
 
+  // 目的寄存器选择
   // GPRSel_RD   1'b0
   // GPRSel_RT   1'b1
-  assign GPRSel = i_lw | i_addi | i_ori | i_lui;
+  assign GPRSel = i_lw | i_addi | i_ori | i_lui | i_slti | i_andi;
   
+  // 写入数据选择
   // WDSel_FromALU 2'b00
   // WDSel_FromMEM 2'b01
   // WDSel_FromPC  2'b10 
-  // WDSel[1]   WDSel[0]  i_lw  i_lui
-  //    0          0        0     0
-  //    0          0        0     1
-  //    0          1        1     0
-  assign WDSel[0] = i_w & ~i_lui;
+  // WDSel[1]   WDSel[0]  i_lw  i_lui i_slti
+  //    0          0        0     0      1
+  //    0          0        0     1      0
+  //    0          1        1     0      0
+  assign WDSel[0] = i_w;
   // assign WDSel[1] = i_lui;
 
+  // PC来源选择 
   // NPC_PLUS4   2'b00
   // NPC_BRANCH  2'b01
   // NPC_JUMP    2'b10
-  assign NPCOp[0] = i_beq & Zero;
+  assign NPCOp[0] = (i_beq & Zero) | (i_bne & ~Zero);
   assign NPCOp[1] = i_j;
   
   // ALU_NOP   3'b000

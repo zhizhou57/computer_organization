@@ -4,7 +4,8 @@
 module ctrl(Op, Funct, Zero, 
             RegWrite, MemWrite,
             EXTOp, ALUOp, NPCOp, 
-            ALUSrc, GPRSel, WDSel
+            ALUSrcA, ALUSrcB, 
+            GPRSel, WDSel
             );
             
    input  [5:0] Op;       // opcode
@@ -14,9 +15,10 @@ module ctrl(Op, Funct, Zero,
    output       RegWrite; // control signal for register write
    output       MemWrite; // control signal for memory write
    output       EXTOp;    // control signal to signed extension
-   output [2:0] ALUOp;    // ALU opertion
+   output [3:0] ALUOp;    // ALU opertion
    output [1:0] NPCOp;    // next pc operation
-   output       ALUSrc;   // ALU source for A
+   output       ALUSrcA;  // ALU source for A
+   output       ALUSrcB;   // ALU source for B
 
    output [1:0] GPRSel;   // general purpose register selection
    output [1:0] WDSel;    // (register) write data selection
@@ -61,12 +63,14 @@ module ctrl(Op, Funct, Zero,
    wire i_jal  = ~Op[5]&~Op[4]&~Op[3]&~Op[2]& Op[1]& Op[0];  // jal
 
   // generate control signals
-  assign RegWrite   = rtype | i_lw | i_addi | i_ori | i_jal | i_lui | i_slti | i_andi; // register write
+  assign RegWrite   = rtype | i_lw | i_addi | i_ori | i_jal | i_lui | i_slti | i_andi | i_nor; // register write
   
   assign MemWrite   = i_sw;                           // memory write
-  assign ALUSrc     = i_lw | i_sw | i_addi | i_ori | i_lui | i_slti | i_andi;   // ALU B is from instruction immediate
+  assign ALUSrcB    = i_lw | i_sw | i_addi | i_ori | i_lui | i_slti | i_andi ;   // ALU B is from instruction immediate
+  assign ALUSrcA    = i_sll | i_srl;    // ALU A is from instruction[10:5](after zero extension)
   assign EXTOp      = i_addi | i_lw | i_sw | i_slti;           // signed extension
 
+  // 目的寄存器选择
   // GPRSel_RD   2'b00
   // GPRSel_RT   2'b01
   // GPRSel_31   2'b10
@@ -87,18 +91,22 @@ module ctrl(Op, Funct, Zero,
   // NPC_PLUS4   2'b00
   // NPC_BRANCH  2'b01
   // NPC_JUMP    2'b10
-  assign NPCOp[0] = i_beq & Zero;
+  assign NPCOp[0] = (i_beq & Zero) | (i_bne & ~Zero);
   assign NPCOp[1] = i_j | i_jal;
   
-  // ALU_NOP   3'b000
-  // ALU_ADD   3'b001
-  // ALU_SUB   3'b010
-  // ALU_AND   3'b011
-  // ALU_OR    3'b100
-  // ALU_SLT   3'b101
-  // ALU_SLTU  3'b110
-  assign ALUOp[0] = i_add | i_lw | i_sw | i_addi | i_and | i_slt | i_addu;
-  assign ALUOp[1] = i_sub | i_beq | i_and | i_sltu | i_subu;
-  assign ALUOp[2] = i_or | i_ori | i_slt | i_sltu;
+  // ALU_NOP            4'b0000
+  // ALU_ADD            4'b0001
+  // ALU_SUB            4'b0010
+  // ALU_AND            4'b0011
+  // ALU_OR             4'b0100
+  // ALU_SLT            4'b0101
+  // ALU_SLTU           4'b0110
+  // ALU_SLL  ALU_SLLV  4'b0111
+  // ALU_NOR            4'b1000
+  // ALU_SRL  ALU_SRLV  4'b1001
+  assign ALUOp[0] = i_add | i_lw  | i_sw  | i_addi | i_and  | i_slt | i_addu | i_sll | i_sllv | i_srl | i_slrv;
+  assign ALUOp[1] = i_sub | i_beq | i_and | i_sltu | i_subu | i_sll | i_sllv;
+  assign ALUOp[2] = i_or  | i_ori | i_slt | i_sltu | i_sll  | i_sllv;
+  assign ALUOp[3] = i_nor | i_srl | i_srlv;
 
 endmodule

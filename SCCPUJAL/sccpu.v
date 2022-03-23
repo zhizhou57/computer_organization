@@ -22,7 +22,8 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
    wire [1:0]  WDSel;       // (register) write data selection
    wire [1:0]  GPRSel;      // general purpose register selection
    
-   wire        ALUSrc;      // ALU source for A
+   wire        ALUSrcA;      // ALU source for A
+   wire        ALUSrcB;      // ALU source for A
    wire        Zero;        // ALU ouput zero
 
    wire [31:0] NPC;         // next PC
@@ -47,13 +48,16 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
    assign rd = instr[15:11];  // rd
    assign Imm16 = instr[15:0];// 16-bit immediate
    assign IMM = instr[25:0];  // 26-bit immediate
+
+   assign shift = instr[10:6]; // 5-bit shift amount
    
    // instantiation of control unit
    ctrl U_CTRL ( 
       .Op(Op), .Funct(Funct), .Zero(Zero),
       .RegWrite(RegWrite), .MemWrite(MemWrite),
       .EXTOp(EXTOp), .ALUOp(ALUOp), .NPCOp(NPCOp), 
-      .ALUSrc(ALUSrc), .GPRSel(GPRSel), .WDSel(WDSel)
+      .ALUSrcA(ALUSrcA), .ALUSrcB(ALUSrcB), 
+      .GPRSel(GPRSel), .WDSel(WDSel)
    );
    
    // instantiation of PC
@@ -91,9 +95,14 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
       .Imm16(Imm16), .EXTOp(EXTOp), .Imm32(Imm32) 
    );
    
+   // mux for ALU A
+   mux2 #(32) U_MUX_ALU_A (
+      .d0(RD1), .d1({{27*{0}}, shift}), .s(ALUSrcA), .y(A)
+   )
+
    // mux for ALU B
    mux2 #(32) U_MUX_ALU_B (
-      .d0(writedata), .d1(Imm32), .s(ALUSrc), .y(B)
+      .d0(writedata), .d1(Imm32), .s(ALUSrcB), .y(B)
    );   
    
    // instantiation of alu

@@ -80,14 +80,14 @@ module ctrl(Op, Funct, Zero,
   // 写入数据选择
   // WDSel_FromALU 2'b00
   // WDSel_FromMEM 2'b01
-  // WDSel_FromPC  2'b10 
+  // WDSel_FromPCPLUS4  2'b10 
   // WDSel[1]   WDSel[0]  i_lw  i_jal
   //    1          0        0      1
   //    0          1        1      0
   assign WDSel[0] = i_lw;
   assign WDSel[1] = i_jal | i_jalr;
 
-  // PC来源选择
+  // NPC来源选择
   // NPC_PLUS4   2'b00
   // NPC_BRANCH  2'b01
   // NPC_JUMP    2'b10

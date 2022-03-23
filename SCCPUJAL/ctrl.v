@@ -96,17 +96,18 @@ module ctrl(Op, Funct, Zero,
   
   // ALU_NOP            4'b0000
   // ALU_ADD            4'b0001
-  // ALU_SUB            4'b0010
-  // ALU_AND            4'b0011
+  // ALU_SUB  ALU_BEQ   4'b0010
+  // ALU_AND  ALU_ANDI  4'b0011
   // ALU_OR             4'b0100
-  // ALU_SLT            4'b0101
+  // ALU_SLT  ALU_SLTI  4'b0101
   // ALU_SLTU           4'b0110
   // ALU_SLL  ALU_SLLV  4'b0111
   // ALU_NOR            4'b1000
   // ALU_SRL  ALU_SRLV  4'b1001
-  assign ALUOp[0] = i_add | i_lw  | i_sw  | i_addi | i_and  | i_slt | i_addu | i_sll | i_sllv | i_srl | i_slrv;
-  assign ALUOp[1] = i_sub | i_beq | i_and | i_sltu | i_subu | i_sll | i_sllv;
-  assign ALUOp[2] = i_or  | i_ori | i_slt | i_sltu | i_sll  | i_sllv;
-  assign ALUOp[3] = i_nor | i_srl | i_srlv;
+  // ALU_LUI            4'b1010
+  assign ALUOp[0] = i_add | i_lw  | i_sw  | i_addi | i_and  | i_slt | i_addu | i_sll | i_sllv | i_srl | i_slrv | i_slti | i_andi;
+  assign ALUOp[1] = i_sub | i_beq | i_and | i_sltu | i_subu | i_sll | i_sllv | i_andi| i_bne  | i_lui;
+  assign ALUOp[2] = i_or  | i_ori | i_slt | i_sltu | i_sll  | i_sllv| i_slti;
+  assign ALUOp[3] = i_nor | i_srl | i_srlv| i_lui;
 
 endmodule

@@ -75,7 +75,7 @@ module ctrl(Op, Funct, Zero,
   // GPRSel_RT   2'b01
   // GPRSel_31   2'b10
   assign GPRSel[0] = i_lw | i_addi | i_ori | i_lui | i_slti | i_andi;
-  assign GPRSel[1] = i_jal;
+  assign GPRSel[1] = i_jal| i_jalr;
   
   // 写入数据选择
   // WDSel_FromALU 2'b00
@@ -85,14 +85,15 @@ module ctrl(Op, Funct, Zero,
   //    1          0        0      1
   //    0          1        1      0
   assign WDSel[0] = i_lw;
-  assign WDSel[1] = i_jal;
+  assign WDSel[1] = i_jal | i_jalr;
 
   // PC来源选择
   // NPC_PLUS4   2'b00
   // NPC_BRANCH  2'b01
   // NPC_JUMP    2'b10
-  assign NPCOp[0] = (i_beq & Zero) | (i_bne & ~Zero);
-  assign NPCOp[1] = i_j | i_jal;
+  // NPC_REG     2'b11
+  assign NPCOp[0] = (i_beq & Zero) | (i_bne & ~Zero) | i_jr | i_jalr;
+  assign NPCOp[1] = i_j | i_jal | i_jr | i_jalr;
   
   // ALU_NOP            4'b0000
   // ALU_ADD            4'b0001

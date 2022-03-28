@@ -41,6 +41,7 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
    wire [31:0] RD1;         // register data specified by rs
    wire [31:0] A;           // operator for ALU A
    wire [31:0] B;           // operator for ALU B
+   wire [4:0] shift;
    
    assign Op = instr[31:26];  // instruction
    assign Funct = instr[5:0]; // funct

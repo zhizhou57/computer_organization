@@ -16,7 +16,7 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
    
    wire        RegWrite;    // control signal to register write
    wire        EXTOp;       // control signal to signed extension
-   wire [2:0]  ALUOp;       // ALU opertion
+   wire [3:0]  ALUOp;       // ALU opertion
    wire [1:0]  NPCOp;       // next PC operation
 
    wire [1:0]  WDSel;       // (register) write data selection
@@ -39,6 +39,7 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
    wire [4:0]  A3;          // register address for write
    wire [31:0] WD;          // register write data
    wire [31:0] RD1;         // register data specified by rs
+   wire [31:0] A;           // operator for ALU A
    wire [31:0] B;           // operator for ALU B
    
    assign Op = instr[31:26];  // instruction

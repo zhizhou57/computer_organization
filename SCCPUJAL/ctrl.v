@@ -106,7 +106,7 @@ module ctrl(Op, Funct, Zero,
   // ALU_NOR            4'b1000
   // ALU_SRL  ALU_SRLV  4'b1001
   // ALU_LUI            4'b1010
-  assign ALUOp[0] = i_add | i_lw  | i_sw  | i_addi | i_and  | i_slt | i_addu | i_sll | i_sllv | i_srl | i_slrv | i_slti | i_andi;
+  assign ALUOp[0] = i_add | i_lw  | i_sw  | i_addi | i_and  | i_slt | i_addu | i_sll | i_sllv | i_srl | i_srlv | i_slti | i_andi;
   assign ALUOp[1] = i_sub | i_beq | i_and | i_sltu | i_subu | i_sll | i_sllv | i_andi| i_bne  | i_lui;
   assign ALUOp[2] = i_or  | i_ori | i_slt | i_sltu | i_sll  | i_sllv| i_slti;
   assign ALUOp[3] = i_nor | i_srl | i_srlv| i_lui;

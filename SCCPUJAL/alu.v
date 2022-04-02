@@ -25,7 +25,7 @@ module alu(A, B, ALUOp, C, Zero);
          // modify begin
           `ALU_SLL:  C = B << A;                     // SLL、SLLV
           `ALU_NOR:  C = ~(A | B);                   // NOR
-          `ALU_SRL:  C = A >> B;                     // SRL、SRLV
+          `ALU_SRL:  C = B >> A;                     // SRL、SRLV
           `ALU_LUI:  C = B << 16;                    // LUI
          // modify end
           default:   C = A;                          // Undefined

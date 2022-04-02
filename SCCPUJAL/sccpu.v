@@ -109,7 +109,7 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
    
    // instantiation of alu
    alu U_ALU ( 
-      .A(RD1), .B(B), .ALUOp(ALUOp), .C(aluout), .Zero(Zero)
+      .A(A), .B(B), .ALUOp(ALUOp), .C(aluout), .Zero(Zero)
    );
 
 endmodule

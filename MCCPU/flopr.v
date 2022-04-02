@@ -6,7 +6,8 @@ module flopr #(parameter WIDTH = 8)
    output [WIDTH-1:0] q;
    
    reg [WIDTH-1:0] q_r;
-               
+
+   // rst为下降沿触发，置零
    always @(posedge clk or posedge rst) begin
       if ( rst ) 
          q_r <= 0;
@@ -14,6 +15,7 @@ module flopr #(parameter WIDTH = 8)
          q_r <= d;
    end // end always
    
+   // 保存结果
    assign q = q_r;
       
 endmodule

@@ -99,7 +99,7 @@ module sccpu( clk, rst, instr, readdata, PC, MemWrite, aluout, writedata, reg_se
    
    // mux for ALU A
    mux2 #(32) U_MUX_ALU_A (
-      .d0(RD1), .d1({{27*{0}}, shift}), .s(ALUSrcA), .y(A)
+      .d0(RD1), .d1({27'b0, shift}), .s(ALUSrcA), .y(A)
    );
 
    // mux for ALU B

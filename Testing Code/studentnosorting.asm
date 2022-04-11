@@ -59,9 +59,10 @@
 # beq bne
 # j jal jr
 # lw sw
+# 20193 0208 0151
 ######################################################################################################################### instr.(H) ####### addr.(H)
-      lui     $2, 0x5487          # high halfword the student no (last 8 digitals), use your own student no. instead!      # 0                0
-      ori     $2, $2, 0x3530      # low halfword of the student no (last 8 digitals)                                       # 1                4
+      lui     $2, 0x0208          # high halfword the student no (last 8 digitals), use your own student no. instead!      # 0                0
+      ori     $2, $2, 0x0151      # low halfword of the student no (last 8 digitals)                                       # 1                4
       sw      $2, 0x100($0)       # store the original stuno at data memory                                                # 2                8
       addi    $11, $0, 8          # the size of stuno, N = 8                                                               # 3                C
       lw      $1, 0x100($0)       # $1 = [0x100] = stuno                                                                   # 4                10
